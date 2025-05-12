@@ -29,6 +29,11 @@ from open_webui.env import (
     WEBUI_AUTH_COOKIE_SECURE,
     WEBUI_AUTH_SIGNOUT_REDIRECT_URL,
     SRC_LOG_LEVELS,
+    USE_SAML_ROLE_ASSIGNMENT,
+    WEBUI_AUTH_TRUSTED_ROLE_HEADER,
+    TRUSTED_ADMIN_ROLE_VALUE,
+    TRUSTED_USER_ROLE_VALUE,
+    TRUSTED_PENDING_ROLE_VALUE
 )
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, Response
@@ -487,6 +492,30 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
                 detail=ERROR_MESSAGES.PASSWORD_TOO_LONG,
+            )
+            
+        if USE_SAML_ROLE_ASSIGNMENT == True:
+            if WEBUI_AUTH_TRUSTED_ROLE_HEADER not in request.headers:
+                raise HTTPException(400, detail=ERROR_MESSAGES.INVALID_TRUSTED_HEADER)
+            header_saml_role = request.headers[WEBUI_AUTH_TRUSTED_ROLE_HEADER]
+            if header_saml_role == TRUSTED_ADMIN_ROLE_VALUE:
+                trusted_saml_role_val = "admin"
+            elif header_saml_role == TRUSTED_USER_ROLE_VALUE:
+                trusted_saml_role_val = "user"
+            elif header_saml_role == TRUSTED_PENDING_ROLE_VALUE:
+                trusted_saml_role_val = "pending"
+            else:
+                raise HTTPException(400, detail=ERROR_MESSAGES.INVALID_TRUSTED_ROLE)
+            role = (
+                "admin"
+                if Users.get_num_users() == 0
+                else trusted_saml_role_val
+            )
+        else:
+            role = (
+                "admin"
+                if Users.get_num_users() == 0
+                else request.app.state.config.DEFAULT_USER_ROLE
             )
 
         hashed = get_password_hash(form_data.password)
