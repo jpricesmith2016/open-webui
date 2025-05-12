@@ -28,6 +28,11 @@ from open_webui.env import (
     WEBUI_FAVICON_URL,
     WEBUI_NAME,
     log,
+    USE_SAML_ROLE_ASSIGNMENT,
+    WEBUI_AUTH_TRUSTED_ROLE_HEADER,
+    TRUSTED_ADMIN_ROLE_VALUE,
+    TRUSTED_USER_ROLE_VALUE,
+    TRUSTED_PENDING_ROLE_VALUE
 )
 from open_webui.internal.db import Base, get_db
 from open_webui.utils.redis import get_redis_connection
@@ -277,6 +282,23 @@ API_KEY_ALLOWED_ENDPOINTS = PersistentConfig(
     "API_KEY_ALLOWED_ENDPOINTS",
     "auth.api_key.allowed_endpoints",
     os.environ.get("API_KEY_ALLOWED_ENDPOINTS", ""),
+)
+
+
+USE_SAML_ROLE_ASSIGNMENT = (
+    os.environ.get("USE_SAML_ROLE_ASSIGNMENT", "False").lower() == "true"
+)
+WEBUI_AUTH_TRUSTED_ROLE_HEADER = os.environ.get(
+    "WEBUI_AUTH_TRUSTED_ROLE_HEADER", None
+)
+TRUSTED_ADMIN_ROLE_VALUE = os.environ.get(
+    "TRUSTED_ADMIN_ROLE_VALUE", None
+)
+TRUSTED_USER_ROLE_VALUE = os.environ.get(
+    "TRUSTED_USER_ROLE_VALUE", None
+)
+TRUSTED_PENDING_ROLE_VALUE = os.environ.get(
+    "TRUSTED_PENDING_ROLE_VALUE", None
 )
 
 
